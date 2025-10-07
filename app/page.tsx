@@ -2,102 +2,324 @@ import Image from "next/image";
 
 export default function Home() {
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Boneyard Soundscape</title>
+  <style>
+    :root { --bg: #0a0a0a; --fg: #e6e6e6; --mid: #8c8c8c; }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, "Noto Sans", Arial, sans-serif;
+      overflow: hidden;
+    }
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+    /* Fullscreen canvas visualizer */
+    #viz { position: fixed; inset: 0; display: block; width: 100vw; height: 100vh; }
+
+    /* Minimal start overlay to satisfy autoplay policies */
+    #gate {
+      position: fixed; inset: 0; display: grid; place-items: center;
+      background:
+        radial-gradient(80vmax 80vmax at 50% 40%, rgba(255,255,255,0.08), transparent 60%),
+        linear-gradient(180deg, rgba(255,255,255,0.06), transparent 30%),
+        var(--bg);
+      color: var(--fg);
+    }
+    #gate.hidden { display: none; }
+    .card {
+      backdrop-filter: blur(6px);
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 18px;
+      padding: 24px 28px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      text-align: center;
+    }
+    .title {
+      font-weight: 900;
+      font-size: clamp(24px, 4vw, 48px);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .sub { color: var(--mid); font-size: 14px; margin-bottom: 16px; }
+    .btn {
+      display: inline-block; cursor: pointer; user-select: none;
+      font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+      padding: 12px 18px; border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04));
+    }
+    .btn:active { transform: translateY(1px); }
+
+    /* Hide YouTube players visually but keep them alive */
+    #players { position: fixed; left: -9999px; top: -9999px; width: 1px; height: 1px; overflow: hidden; }
+
+    /* subtle credit (toggle with keyboard) */
+    #credit { position: fixed; right: 10px; bottom: 10px; color: #666; font-size: 12px; opacity: .4; }
+  </style>
+</head>
+<body>
+  <canvas id="viz" aria-hidden="true"></canvas>
+
+  <!-- Hidden container for the YouTube iframes -->
+  <div id="players"></div>
+
+  <!-- Click gate to enable audio on most browsers -->
+  <div id="gate" role="dialog" aria-label="Start Audio">
+    <div class="card">
+      <div class="title">Boneyard Soundscape</div>
+      <div class="sub">Click once to begin. Audio will loop.
+        <br/>If your browser blocks autoplay, try clicking again.</div>
+      <button class="btn" id="startBtn">Start</button>
     </div>
+  </div>
+
+  <div id="credit">boneyard soundscape</div>
+
+  <script>
+    /* -------------------- CONFIG -------------------- */
+    const FIRST_ID = "Hzl5ncNG_4E"; // single instance, loops
+    const SECOND_ID = "NbxdWLvH7ew"; // four instances with offsets
+    const OFFSETS_SECONDS = [0.0, 0.5, 1.0, 1.5]; // tweak if you want different phasing
+
+    // Visualizer text label
+    const VIZ_TEXT = "BONEYARD\nSOUNDSCAPE";
+
+    /* -------------------- YOUTUBE -------------------- */
+    let ytReady = false;
+    let players = [];
+
+    function loadYTApi() {
+      return new Promise((resolve) => {
+        if (ytReady) return resolve();
+        const tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        window.onYouTubeIframeAPIReady = () => { ytReady = true; resolve(); };
+        document.head.appendChild(tag);
+      });
+    }
+
+    function makePlayer(videoId, onReadyCb) {
+      const container = document.createElement('div');
+      container.id = 'p_' + Math.random().toString(36).slice(2);
+      document.getElementById('players').appendChild(container);
+      const p = new YT.Player(container.id, {
+        width: 1, height: 1,
+        videoId,
+        playerVars: {
+          autoplay: 1, controls: 0, disablekb: 1, fs: 0, playsinline: 1,
+          modestbranding: 1, rel: 0, mute: 0, origin: location.origin,
+          loop: 1, playlist: videoId // loop needs playlist set
+        },
+        events: {
+          onReady: (e) => onReadyCb && onReadyCb(e.target),
+          onStateChange: (e) => {
+            // Ensure loop behaves consistently across browsers
+            if (e.data === YT.PlayerState.ENDED) { try { e.target.seekTo(0, true); e.target.playVideo(); } catch(_){} }
+          }
+        }
+      });
+      return p;
+    }
+
+    async function startAudio() {
+      await loadYTApi();
+      const ready = [];
+
+      // First track (single)
+      ready.push(new Promise(res => {
+        const p = makePlayer(FIRST_ID, (player) => res(player));
+        players.push(p);
+      }));
+
+      // Four offset instances of SECOND_ID
+      OFFSETS_SECONDS.forEach((offset) => {
+        ready.push(new Promise(res => {
+          const p = makePlayer(SECOND_ID, (player) => res({ player, offset }));
+          players.push(p);
+        }));
+      });
+
+      const results = await Promise.all(ready);
+
+      // Unmute and kick all with offsets
+      results.forEach((r, idx) => {
+        if (idx === 0 && r.playVideo) {
+          // this is the single FIRST_ID player
+          try { r.unMute(); r.setLoop(true); r.playVideo(); } catch(_){}
+        } else {
+          // these are objects { player, offset }
+          const { player, offset } = r.player ? r : { player: r, offset: 0 };
+          try {
+            player.unMute();
+            if (typeof offset === 'number' && offset > 0) player.seekTo(offset, true);
+            player.playVideo();
+          } catch(_){}
+        }
+      });
+    }
+
+    // Gate button
+    const gate = document.getElementById('gate');
+    document.getElementById('startBtn').addEventListener('click', async () => {
+      gate.classList.add('hidden');
+      try { await startAudio(); } catch (err) { console.error(err); gate.classList.remove('hidden'); }
+    });
+
+    // Allow toggling the tiny credit (optional, aesthetic)
+    window.addEventListener('keydown', (e) => {
+      if (e.key.toLowerCase() === 'c') {
+        const el = document.getElementById('credit');
+        el.style.display = (el.style.display === 'none') ? 'block' : 'none';
+      }
+    });
+
+    /* -------------------- VISUALIZER -------------------- */
+    const canvas = document.getElementById('viz');
+    const ctx = canvas.getContext('2d');
+
+    let W, H, DPR;
+    function resize() {
+      DPR = Math.min(2, window.devicePixelRatio || 1);
+      W = canvas.width = Math.floor(innerWidth * DPR);
+      H = canvas.height = Math.floor(innerHeight * DPR);
+    }
+    addEventListener('resize', resize, { passive: true });
+    resize();
+
+    // Pre-render text mask to clip the block field
+    function makeTextMask() {
+      const off = document.createElement('canvas');
+      const octx = off.getContext('2d');
+      off.width = W; off.height = H;
+      const margin = 0.08 * Math.min(W, H);
+      const lines = VIZ_TEXT.split('\n');
+      const targetWidth = W - 2 * margin;
+      const lineHeight = 0.34 * H / lines.length; // big, chunky
+      octx.fillStyle = '#fff';
+      octx.textBaseline = 'middle';
+      octx.textAlign = 'center';
+      octx.font = `900 ${Math.floor(lineHeight)}px system-ui, Impact, Arial Black, sans-serif`;
+      const totalHeight = lineHeight * lines.length * 1.0;
+      const startY = (H - totalHeight) / 2 + lineHeight/2;
+      lines.forEach((txt, i) => {
+        // Auto-shrink to fit width
+        let size = lineHeight;
+        octx.font = `900 ${Math.floor(size)}px system-ui, Impact, Arial Black, sans-serif`;
+        while (octx.measureText(txt).width > targetWidth && size > 10) {
+          size -= 2; octx.font = `900 ${Math.floor(size)}px system-ui, Impact, Arial Black, sans-serif`;
+        }
+        const y = startY + i * lineHeight * 1.1;
+        // Extruded shadow to fake 3D blocks for outline
+        octx.save();
+        for (let d = 18; d > 0; d -= 2) {
+          octx.fillStyle = `rgba(255,255,255,${0.02 + d*0.003})`;
+          octx.setTransform(1, 0, -0.12, 1, d, d); // skew for faux 3D
+          octx.fillText(txt, W/2, y);
+        }
+        octx.restore();
+        octx.fillStyle = '#fff';
+        octx.setTransform(1, 0, -0.12, 1, 0, 0);
+        octx.fillText(txt, W/2, y);
+        octx.setTransform(1,0,0,1,0,0);
+      });
+      return off;
+    }
+
+    let textMask = makeTextMask();
+    addEventListener('resize', () => { textMask = makeTextMask(); });
+
+    // Simple hash-based pseudo noise
+    function hash(n){
+      return Math.sin(n * 127.1 + 311.7) * 43758.5453 % 1;
+    }
+    function noise2(x, y){
+      const iX = Math.floor(x), iY = Math.floor(y);
+      const fX = x - iX, fY = y - iY;
+      const a = hash(iX + iY * 57);
+      const b = hash(iX + 1 + iY * 57);
+      const c = hash(iX + (iY + 1) * 57);
+      const d = hash(iX + 1 + (iY + 1) * 57);
+      const u = fX * fX * (3 - 2 * fX);
+      const v = fY * fY * (3 - 2 * fY);
+      return a*(1-u)*(1-v) + b*u*(1-v) + c*(1-u)*v + d*u*v;
+    }
+
+    function drawBlocks(t){
+      // Background
+      ctx.clearRect(0,0,W,H);
+      ctx.fillStyle = '#000';
+      ctx.fillRect(0,0,W,H);
+
+      // Set clip to the text silhouette
+      ctx.save();
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.drawImage(textMask, 0, 0);
+      ctx.globalCompositeOperation = 'source-in';
+
+      // Grid of faux-3D blocks animated by noise
+      const cols = Math.floor(W / (18 * DPR));
+      const rows = Math.floor(H / (18 * DPR));
+      const cellW = W / cols; const cellH = H / rows;
+
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+          const nx = x / cols, ny = y / rows;
+          const n = noise2(nx * 8 + t*0.0006, ny * 6 + t*0.0005);
+          const h = (0.15 + n * 0.85);
+          const lum = Math.floor(70 + h * 160); // 70..230
+
+          // Base tile
+          const px = x * cellW; const py = y * cellH;
+          const w = cellW * 0.9; const h2 = cellH * 0.9;
+          const depth = Math.max(2, (h * 18));
+
+          // shadow (extrusion)
+          ctx.fillStyle = `rgba(255,255,255,0.06)`;
+          ctx.fillRect(px + depth, py + depth, w, h2);
+
+          // top face
+          ctx.fillStyle = `rgb(${lum},${lum},${lum})`;
+          ctx.fillRect(px, py, w, h2);
+
+          // edge highlight
+          ctx.fillStyle = `rgba(255,255,255,0.15)`;
+          ctx.fillRect(px, py, w, 2*DPR);
+          ctx.fillRect(px, py, 2*DPR, h2);
+        }
+      }
+      ctx.restore();
+
+      // Soft vignette
+      const grd = ctx.createRadialGradient(W/2,H/2, Math.min(W,H)*0.2, W/2,H/2, Math.max(W,H)*0.7);
+      grd.addColorStop(0, 'rgba(0,0,0,0)');
+      grd.addColorStop(1, 'rgba(0,0,0,0.5)');
+      ctx.fillStyle = grd; ctx.fillRect(0,0,W,H);
+
+      // Very subtle outline of text (white/grey) for readability
+      ctx.globalCompositeOperation = 'destination-over';
+      ctx.drawImage(textMask, 0, 0);
+      ctx.globalCompositeOperation = 'source-over';
+    }
+
+    let startTime = performance.now();
+    function loop() {
+      const now = performance.now();
+      drawBlocks(now - startTime);
+      requestAnimationFrame(loop);
+    }
+    loop();
+  </script>
+</body>
+</html>
+
   );
 }
